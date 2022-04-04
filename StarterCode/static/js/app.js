@@ -1,38 +1,61 @@
-names_arr = []
-
+let names_arr = [];
+let dataset;
 d3.json('samples.json').then(function(data){
-    //console.log(data);
+    dataset = data;
     // console.log("Hello World!")
-    
+    var users = Object.values(data.names)
     names_arr.push(data.names)
     // console.log(names_arr)
     // console.log(data.names)
-    user_info(data)
-    bar(data)
-    bubble(data)
-    test(data)
+    build_charts(data, 0)
 })
+
+function build_charts(data, i){
+
+  dropdown(data)
+  user_info(data, i)
+  bar(data, i)
+  bubble(data, i)
+  pie(data, i)
+  gage(data, i)
+  test(data)
+
+}
+
+function dropdown(data){
+  for (i = 0; i < data.names.length; i++){
+    var el = document.createElement("option");
+    el.text = data.names[i];
+    el.setAttribute("value", data.names[i])
+    document.getElementById("selDataset").appendChild(el);
+  }
+
+}
+
+function dropdown_changed(i){
+
+  for (j =0; j < dataset.names.length; j++){
+    if (dataset.names[j] == i){
+      break;
+    }
+  }
+
+
+
+  // console.log("changed!");
+  // console.log(i)
+  // console.log(dataset)
+  // console.log(dataset.metadata[+i])
+  build_charts(dataset, j);
+  
+}
+
 
 
 // On change to the DOM, call init()
-d3.selectAll("#selDataset").on("change", init);
-
-// Function called by DOM changes
-function init() {
-
-var dropdownMenu = d3.select("#selDataset");
-
-  // Assign the value of the dropdown menu option to a variable
-
-var dataset = dropdownMenu.property("value");
-
-  // Initialize an empty array for the country's data
-var data = [];
+d3.selectAll("#selDataset").on("change", dropdown_changed(this.value));
 
 
-  // Call function to update the chart
-updatePlotly(data);
-}
 
 
 function test(data) {
@@ -48,26 +71,28 @@ console.log(data.metadata[0])
 
 
 
-function user_info(data){
-  d3.select(".panel-body").text(`Age : ${data.metadata[0].id}`)
-  d3.select(".panel-body").text(`Ethnicity: ${data.metadata[0].ethnicity}`)
-  d3.select(".panel-body").text(`Gender: ${data.metadata[0].gender}`)
-  d3.select(".panel-body").text(`Age: ${data.metadata[0].age}`)
-  d3.select(".panel-body").text(`Location: ${data.metadata[0].location}`)
-  d3.select(".panel-body").text(`BbType: ${data.metadata[0].bbtype}`)
-  d3.select(".panel-body").text(`Wfreq: ${data.metadata[0].wfreq}`)
-
+function user_info(data, i){
+  const user_info_panel = d3.select(".panel-body");
+  user_info_panel.html("")
+  user_info_panel.append("h6").text(`ID: ${data.metadata[i].id}`);
+  user_info_panel.append("h6").text(`Age : ${data.metadata[i].age}`);
+  user_info_panel.append("h6").text(`BbType: ${data.metadata[i].bbtype}`);
+  user_info_panel.append("h6").text(`Ethnicity: ${data.metadata[i].ethnicity}`);
+  user_info_panel.append("h6").text(`Gender: ${data.metadata[i].gender}`);
+  user_info_panel.append("h6").text(`Location: ${data.metadata[i].location}`);
+  user_info_panel.append("h6").text(`Wfreq: ${data.metadata[i].wfreq}`);
 }
 
-function bar(data){
+function bar(data, i){
 
     var barchart = [
     {
 
-        x: data.samples[0].otu_ids,
-        y: data.samples[0].sample_values,
+        y: data.samples[i].otu_ids.slice(0,10).map(id=>"otu "+id).reverse(),
+        x: data.samples[i].sample_values.slice(0,10).reverse(),
         type: 'bar',
-        orientation: 'h'
+        orientation: 'h',
+        width: 0.5
     }
     ];
 
@@ -78,34 +103,60 @@ function bar(data){
 }
 
 
-function bubble(data){
+function bubble(data, i){
   var trace1 = {
-      x: data.samples[0].otu_ids,
-      y: data.samples[0].sample_values,
+      x: data.samples[i].otu_ids,
+      y: data.samples[i].sample_values,
       mode: 'markers',
       marker: {
-        size: data.samples[0].sample_values
-      }
+        color: data.samples[i].sample_values,
+        colorscale: 'Earth',
+        size: data.samples[i].sample_values
+      },
+
     };
     var data = [trace1];
     var layout = {
       title: 'Marker Size',
       showlegend: false,
       height: 600,
-      width: 600
+      width: 1000
     };
     Plotly.newPlot('bubble', data, layout);
 }
 
 
+function pie(data, i){
+  var data = [{
+    values: data.samples[i].sample_values,
+    labels: ['1167', '2859', '482', '2264','41', '1189', '352','189','2318','1977'],
+    type: 'pie'
+  }];
+  
+  var layout = {
+    height: 400,
+    width: 500
+  };
+  
+  Plotly.newPlot('pie', data, layout);
+  
 
 
 
-
-// Update the restyled plot's values
-function updatePlotly(newdata) {
-    Plotly.restyle("bar", "values", [newdata]);
 }
 
+function gage(data, i){
+  var data = [
+    {
+      domain: { x: [0], y: [10] },
+      value: data.metadata[i].wfreq,
+      title: { text: "Belly Button Washing Frequency" },
+      type: "indicator",
+      mode: "gauge+number"
+    }
+  ];
+  
+  var layout = { width: 600, height: 500, margin: { t: 0, b: 0 } };
+  Plotly.newPlot('gauge', data, layout);
 
-// dbar()
+}

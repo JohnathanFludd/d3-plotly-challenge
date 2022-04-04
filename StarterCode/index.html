@@ -22,13 +22,19 @@
       <div class="col-md-2">
         <div class="well">
           <h5>Test Subject ID No.:</h5>
-          <select id="selDataset" onchange="optionChanged(this.value)"></select>
+          <select id="selDataset" onchange="dropdown_changed(this.value)">
+            
+          
+          
+          </select>
         </div>
         <div class="panel panel-primary">
           <div class="panel-heading">
-            <h3 class="panel-title">Demographic Info</h3>
+            <h3 class="panel-title">Sample MetaData</h3>
           </div>
-          <div id="sample-metadata" class="panel-body"></div>
+          <div id="sample-metadata" class="panel-body">
+
+          </div>
         </div>
       </div>
       <div class="col-md-5">
@@ -42,7 +48,9 @@
         </div>
       </div>
       <div class="col-md-5">
-        <div id="gauge"></div>
+        <div id="gauge">
+          <h4>Gauge chart goes here!</h4>
+        </div>
       </div>
     </div>
     <div class="row">
@@ -50,6 +58,12 @@
         <div id="bubble">
           <h4>Bubble chart goes here!</h4>
         </div>
+
+        <div id="pie">
+          <h4>Pie chart goes here!</h4>
+        </div>  
+
+
       </div>
     </div>
   </div>
